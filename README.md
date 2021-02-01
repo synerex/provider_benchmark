@@ -12,4 +12,7 @@ bench -send -num n -pace msec -count x
 ## receiving
 bench -recv
 
+## for objstorage
+bench -objstorage  [-num n -page msec -count x]
+
 

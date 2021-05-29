@@ -21,11 +21,13 @@ import (
 var (
 	nodesrv  = flag.String("nodesrv", "127.0.0.1:9990", "Node ID Server")
 	recv     = flag.Bool("recv", true, "[default] receive data")
+	rcount   = flag.Int("rcount", 1, "Simultaneous receiving")
 	send     = flag.Bool("send", false, "send data")
 	num      = flag.Int("num", 10, "Number of agents for send")
 	pace     = flag.Int("pace", 10, "wait for each send [msec]")
 	objstore = flag.Bool("objstore", false, "Flag for testing ObjStorage")
 	objmbus  = flag.Bool("objmbus", false, "Flag for testing ObjStorage through mbus")
+	wait     = flag.Int("wait", 0, "wait seconds before sending")
 	count    = flag.Int("count", 1000, "Number of packets for send")
 	//	store           = flag.Bool("store", false, "store csv data")
 	mu                 sync.Mutex
@@ -49,7 +51,10 @@ func recvCallback(clt *sxutil.SXServiceClient, sp *pb.Supply) {
 			totalPackets++
 		}
 	} else if sp.SupplyName == "End" {
-		wg.Done()
+		*rcount--
+		if *rcount == 0 {
+			wg.Done()
+		}
 		// finish loop!
 	}
 }
@@ -258,6 +263,10 @@ func main() {
 	client := sxutil.GrpcConnectServer(srv)
 	sxServerAddress = srv
 	argJSON := fmt.Sprintf("{Bench}")
+
+	if *wait > 0 {
+		time.Sleep(time.Second * time.Duration(*wait))
+	}
 
 	//	go subscribeRideSupply(peopleClient)
 	//	go monitorStatus() // keep status

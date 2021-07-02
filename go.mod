@@ -11,5 +11,5 @@ require (
 	github.com/synerex/synerex_api v0.4.3
 	github.com/synerex/synerex_nodeapi v0.5.5 // indirect
 	github.com/synerex/synerex_proto v0.1.12
-	github.com/synerex/synerex_sxutil v0.6.7
+	github.com/synerex/synerex_sxutil v0.6.8
 )

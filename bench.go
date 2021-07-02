@@ -25,6 +25,7 @@ var (
 	send     = flag.Bool("send", false, "send data")
 	num      = flag.Int("num", 10, "Number of agents for send")
 	pace     = flag.Int("pace", 10, "wait for each send [msec]")
+	channel  = flag.Int("channel", 0, "force set channel")
 	objstore = flag.Bool("objstore", false, "Flag for testing ObjStorage")
 	objmbus  = flag.Bool("objmbus", false, "Flag for testing ObjStorage through mbus")
 	wait     = flag.Int("wait", 0, "wait seconds before sending")
@@ -254,7 +255,12 @@ func main() {
 		channelTypes[0] = pbase.PEOPLE_AGENT_SVC
 	}
 
-	srv, rerr := sxutil.RegisterNode(*nodesrv, "Bench", channelTypes, nil)
+	if *channel != 0 {
+	   channelTypes[0] = uint32(*channel)
+	}
+	ndstr := fmt.Sprintf("Bench[%d]",channelTypes[0])
+
+	srv, rerr := sxutil.RegisterNode(*nodesrv, ndstr, channelTypes, nil)
 	if rerr != nil {
 		log.Fatal("Can't register node ", rerr)
 	}
@@ -272,13 +278,15 @@ func main() {
 	//	go monitorStatus() // keep status
 	var sclient *sxutil.SXServiceClient
 	if *objstore { // for objstore simple test
-		sclient = sxutil.NewSXServiceClient(client, pbase.STORAGE_SERVICE, argJSON)
+		sclient = sxutil.NewSXServiceClient(client, channelTypes[0], argJSON)
 		obsStoreTest(sclient)
 	} else if *objmbus {
 		//		sclient = sxutil.NewSXServiceClient(client, pbase.STORAGE_SERVICE, argJSON)
 		//		obsStoreMbus()
 	} else {
-		sclient = sxutil.NewSXServiceClient(client, pbase.PEOPLE_AGENT_SVC, argJSON)
+		sclient = sxutil.NewSXServiceClient(client, channelTypes[0], argJSON)
 		sendRecvTest(sclient)
 	}
+
+	sxutil.UnRegisterNode()
 }
